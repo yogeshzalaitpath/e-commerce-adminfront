@@ -39,16 +39,18 @@ export const getClientEnv = (args: GetClientEnvArgs) => {
     .filter((key) => MEDUSA_ADMIN.test(key))
     .reduce(
       (acc, current) => {
-        acc[current] = process.env[current]
+        acc[current] = process.env[current];
 
-        return acc
+        return acc;
       },
       {
         ADMIN_PATH: args.path || "/",
         NODE_ENV: args.env || "development",
-        MEDUSA_BACKEND_URL: args.backend || process.env.MEDUSA_BACKEND_URL,
+        MEDUSA_BACKEND_URL:
+          args.backend ||
+          process.env.MEDUSA_BACKEND_URL,
       }
-    )
+    );
 
   const stringified = {
     "process.env": Object.keys(raw).reduce((env, key) => {

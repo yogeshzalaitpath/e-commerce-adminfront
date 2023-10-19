@@ -1,14 +1,14 @@
-import path from "node:path"
-import openBrowser from "react-dev-utils/openBrowser"
-import webpack from "webpack"
+import path from "node:path";
+import openBrowser from "react-dev-utils/openBrowser";
+import webpack from "webpack";
 import WebpackDevDerver, {
   Configuration as DevServerConfiguration,
-} from "webpack-dev-server"
+} from "webpack-dev-server";
 
-import { DevelopArgs } from "../types"
-import { logger, watchLocalAdminFolder } from "../utils"
-import { createCacheDir } from "../utils/create-cache-dir"
-import { getCustomWebpackConfig } from "../webpack"
+import { DevelopArgs } from "../types";
+import { logger, watchLocalAdminFolder } from "../utils";
+import { createCacheDir } from "../utils/create-cache-dir";
+import { getCustomWebpackConfig } from "../webpack";
 
 /**
  * Starts a development server for the admin UI.
@@ -19,10 +19,10 @@ export async function develop({
   plugins,
   options = {
     path: "/",
-    backend: "http://localhost:9000",
+    backend: process.env.MEDUSA_BACKEND_URL,
     develop: {
       open: true,
-      port: 7001,
+      port: process.env.PORT,
       logLevel: "error",
       stats: "normal",
     },
@@ -31,11 +31,11 @@ export async function develop({
   const { cacheDir } = await createCacheDir({
     appDir,
     plugins,
-  })
+  });
 
-  const entry = path.resolve(cacheDir, "admin", "src", "main.tsx")
-  const dest = path.resolve(appDir, buildDir)
-  const env = "development"
+  const entry = path.resolve(cacheDir, "admin", "src", "main.tsx");
+  const dest = path.resolve(appDir, buildDir);
+  const env = "development";
 
   const config = await getCustomWebpackConfig(appDir, {
     entry,
@@ -43,13 +43,13 @@ export async function develop({
     cacheDir,
     env,
     options,
-  })
+  });
 
   const compiler = webpack({
     ...config,
     infrastructureLogging: { level: options.develop.logLevel },
     stats: options.develop.stats === "normal" ? "errors-only" : undefined,
-  })
+  });
 
   const devServerArgs: DevServerConfiguration = {
     port: options.develop.port,
@@ -64,14 +64,14 @@ export async function develop({
     onListening: options.develop.open
       ? function (devServer) {
           if (!devServer) {
-            logger.warn("Failed to open browser.")
+            logger.warn("Failed to open browser.");
           }
 
           openBrowser(
             `http://localhost:${options.develop.port}${
               options.path ? options.path : ""
             }`
-          )
+          );
         }
       : undefined,
     devMiddleware: {
@@ -83,21 +83,21 @@ export async function develop({
       disableDotRule: true,
     },
     hot: true,
-  }
+  };
 
-  const server = new WebpackDevDerver(devServerArgs, compiler)
+  const server = new WebpackDevDerver(devServerArgs, compiler);
 
   const runServer = async () => {
     logger.info(
       `Started development server on http://localhost:${options.develop.port}${
         options.path ? options.path : ""
       }`
-    )
+    );
 
-    await server.start()
-  }
+    await server.start();
+  };
 
-  await runServer()
+  await runServer();
 
-  await watchLocalAdminFolder(appDir, cacheDir, plugins)
+  await watchLocalAdminFolder(appDir, cacheDir, plugins);
 }
