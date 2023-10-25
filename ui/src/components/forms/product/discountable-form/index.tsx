@@ -24,7 +24,7 @@ const DiscountableForm = ({ form, isGiftCard }: Props) => {
             return <Switch checked={value} onCheckedChange={onChange} />
           }}
         />
-      </div>
+      </div>  
       <p className="inter-base-regular text-grey-50">
         When unchecked discounts will not be applied to this{" "}
         {isGiftCard ? "gift card" : "product"}.

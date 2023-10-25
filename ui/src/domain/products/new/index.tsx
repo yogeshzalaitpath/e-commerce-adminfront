@@ -42,6 +42,7 @@ import { useFeatureFlag } from "../../../providers/feature-flag-provider"
 import { getErrorMessage } from "../../../utils/error-messages"
 import { prepareImages } from "../../../utils/images"
 import { nestedForm } from "../../../utils/nested-form"
+import PopularForm from "../../../components/forms/product/popular-form"
 
 type NewProductForm = {
   general: GeneralFormType
