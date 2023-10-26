@@ -1,100 +1,107 @@
-import { AdminPostProductsReq, ProductVariant } from "@medusajs/medusa"
-import { useAdminCreateProduct, useMedusa } from "medusa-react"
-import { useForm, useWatch } from "react-hook-form"
+import {
+  AdminPostProductsReq,
+  Product,
+  ProductVariant,
+} from "@medusajs/medusa";
+import { useAdminCreateProduct, useMedusa } from "medusa-react";
+import { useForm, useWatch } from "react-hook-form";
 import CustomsForm, {
   CustomsFormType,
-} from "../../../components/forms/product/customs-form"
+} from "../../../components/forms/product/customs-form";
 import DimensionsForm, {
   DimensionsFormType,
-} from "../../../components/forms/product/dimensions-form"
+} from "../../../components/forms/product/dimensions-form";
 import DiscountableForm, {
   DiscountableFormType,
-} from "../../../components/forms/product/discountable-form"
+} from "../../../components/forms/product/discountable-form";
 import GeneralForm, {
   GeneralFormType,
-} from "../../../components/forms/product/general-form"
+} from "../../../components/forms/product/general-form";
 import MediaForm, {
   MediaFormType,
-} from "../../../components/forms/product/media-form"
+} from "../../../components/forms/product/media-form";
 import OrganizeForm, {
   OrganizeFormType,
-} from "../../../components/forms/product/organize-form"
+} from "../../../components/forms/product/organize-form";
 import ThumbnailForm, {
   ThumbnailFormType,
-} from "../../../components/forms/product/thumbnail-form"
-import { FormImage, ProductStatus } from "../../../types/shared"
+} from "../../../components/forms/product/thumbnail-form";
+import { FormImage, ProductStatus } from "../../../types/shared";
 import AddSalesChannelsForm, {
   AddSalesChannelsFormType,
-} from "./add-sales-channels"
-import AddVariantsForm, { AddVariantsFormType } from "./add-variants"
+} from "./add-sales-channels";
+import AddVariantsForm, { AddVariantsFormType } from "./add-variants";
 
-import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { useTranslation } from "react-i18next"
-import { PricesFormType } from "../../../components/forms/general/prices-form"
-import Button from "../../../components/fundamentals/button"
-import FeatureToggle from "../../../components/fundamentals/feature-toggle"
-import CrossIcon from "../../../components/fundamentals/icons/cross-icon"
-import FocusModal from "../../../components/molecules/modal/focus-modal"
-import Accordion from "../../../components/organisms/accordion"
-import useNotification from "../../../hooks/use-notification"
-import { useFeatureFlag } from "../../../providers/feature-flag-provider"
-import { getErrorMessage } from "../../../utils/error-messages"
-import { prepareImages } from "../../../utils/images"
-import { nestedForm } from "../../../utils/nested-form"
-import PopularForm from "../../../components/forms/product/popular-form"
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { PricesFormType } from "../../../components/forms/general/prices-form";
+import Button from "../../../components/fundamentals/button";
+import FeatureToggle from "../../../components/fundamentals/feature-toggle";
+import CrossIcon from "../../../components/fundamentals/icons/cross-icon";
+import FocusModal from "../../../components/molecules/modal/focus-modal";
+import Accordion from "../../../components/organisms/accordion";
+import useNotification from "../../../hooks/use-notification";
+import { useFeatureFlag } from "../../../providers/feature-flag-provider";
+import { getErrorMessage } from "../../../utils/error-messages";
+import { prepareImages } from "../../../utils/images";
+import { nestedForm } from "../../../utils/nested-form";
+import PopularForm, {
+  PopularFormType,
+} from "../../../components/forms/product/popular-form";
 
 type NewProductForm = {
-  general: GeneralFormType
-  discounted: DiscountableFormType
-  organize: OrganizeFormType
-  variants: AddVariantsFormType
-  customs: CustomsFormType
-  dimensions: DimensionsFormType
-  thumbnail: ThumbnailFormType
-  media: MediaFormType
-  salesChannels: AddSalesChannelsFormType
-}
+  general: GeneralFormType;
+  discounted: DiscountableFormType;
+  organize: OrganizeFormType;
+  variants: AddVariantsFormType;
+  customs: CustomsFormType;
+  dimensions: DimensionsFormType;
+  thumbnail: ThumbnailFormType;
+  media: MediaFormType;
+  salesChannels: AddSalesChannelsFormType;
+  is_popular: PopularFormType;
+};
 
 type Props = {
-  onClose: () => void
-}
+  onClose: () => void;
+};
 
 const NewProduct = ({ onClose }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const form = useForm<NewProductForm>({
     defaultValues: createBlank(),
-  })
-  const { mutate } = useAdminCreateProduct()
-  const navigate = useNavigate()
-  const notification = useNotification()
+  });
+  const { mutate } = useAdminCreateProduct();
+  const navigate = useNavigate();
+  const notification = useNotification();
 
   const watchedCustoms = useWatch({
     control: form.control,
     name: "customs",
-  })
+  });
 
   const watchedDimensions = useWatch({
     control: form.control,
     name: "dimensions",
-  })
+  });
 
   const {
     handleSubmit,
     formState: { isDirty },
     reset,
-  } = form
+  } = form;
 
   const closeAndReset = () => {
-    reset(createBlank())
-    onClose()
-  }
+    reset(createBlank());
+    onClose();
+  };
 
   useEffect(() => {
-    reset(createBlank())
-  }, [])
+    reset(createBlank());
+  }, []);
 
-  const { isFeatureEnabled } = useFeatureFlag()
+  const { isFeatureEnabled } = useFeatureFlag();
 
   const onSubmit = (publish = true) =>
     handleSubmit(async (data) => {
@@ -106,27 +113,27 @@ const NewProduct = ({ onClose }: Props) => {
               .sort()
               .join(","),
             variant.stock.stock_location,
-          ]
+          ];
         })
-      )
+      );
 
       const payload = createPayload(
         data,
         publish,
         isFeatureEnabled("sales_channels")
-      )
+      );
 
       if (data.media?.images?.length) {
-        let preppedImages: FormImage[] = []
+        let preppedImages: FormImage[] = [];
 
         try {
-          preppedImages = await prepareImages(data.media.images)
+          preppedImages = await prepareImages(data.media.images);
         } catch (error) {
           let errorMessage = t(
             "new-something-went-wrong-while-trying-to-upload-images",
             "Something went wrong while trying to upload images."
-          )
-          const response = (error as any).response as Response
+          );
+          const response = (error as any).response as Response;
 
           if (response.status === 500) {
             errorMessage =
@@ -135,28 +142,28 @@ const NewProduct = ({ onClose }: Props) => {
               t(
                 "new-no-file-service-configured",
                 "You might not have a file service configured. Please contact your administrator"
-              )
+              );
           }
 
-          notification(t("new-error", "Error"), errorMessage, "error")
-          return
+          notification(t("new-error", "Error"), errorMessage, "error");
+          return;
         }
-        const urls = preppedImages.map((image) => image.url)
+        const urls = preppedImages.map((image) => image.url);
 
-        payload.images = urls
+        payload.images = urls;
       }
 
       if (data.thumbnail?.images?.length) {
-        let preppedImages: FormImage[] = []
+        let preppedImages: FormImage[] = [];
 
         try {
-          preppedImages = await prepareImages(data.thumbnail.images)
+          preppedImages = await prepareImages(data.thumbnail.images);
         } catch (error) {
           let errorMessage = t(
             "new-upload-thumbnail-error",
             "Something went wrong while trying to upload the thumbnail."
-          )
-          const response = (error as any).response as Response
+          );
+          const response = (error as any).response as Response;
 
           if (response.status === 500) {
             errorMessage =
@@ -165,15 +172,15 @@ const NewProduct = ({ onClose }: Props) => {
               t(
                 "new-no-file-service-configured",
                 "You might not have a file service configured. Please contact your administrator"
-              )
+              );
           }
 
-          notification(t("new-error", "Error"), errorMessage, "error")
-          return
+          notification(t("new-error", "Error"), errorMessage, "error");
+          return;
         }
-        const urls = preppedImages.map((image) => image.url)
+        const urls = preppedImages.map((image) => image.url);
 
-        payload.thumbnail = urls[0]
+        payload.thumbnail = urls[0];
       }
 
       mutate(payload, {
@@ -182,17 +189,17 @@ const NewProduct = ({ onClose }: Props) => {
             product.variants,
             optionsToStockLocationsMap
           ).then(() => {
-            closeAndReset()
-            navigate(`/a/products/${product.id}`)
-          })
+            closeAndReset();
+            navigate(`/a/products/${product.id}`);
+          });
         },
         onError: (err) => {
-          notification(t("new-error", "Error"), getErrorMessage(err), "error")
+          notification(t("new-error", "Error"), getErrorMessage(err), "error");
         },
-      })
-    })
+      });
+    });
 
-  const { client } = useMedusa()
+  const { client } = useMedusa();
 
   const createStockLocationsForVariants = async (
     variants: ProductVariant[],
@@ -207,14 +214,16 @@ const NewProduct = ({ onClose }: Props) => {
           const optionsKey = variant.options
             .map((option) => option?.value || "")
             .sort()
-            .join(",")
+            .join(",");
 
-          const stock_locations = stockLocationsMap.get(optionsKey)
+          const stock_locations = stockLocationsMap.get(optionsKey);
           if (!stock_locations?.length) {
-            return
+            return;
           }
 
-          const inventory = await client.admin.variants.getInventory(variant.id)
+          const inventory = await client.admin.variants.getInventory(
+            variant.id
+          );
 
           return await Promise.all(
             inventory.variant.inventory
@@ -224,16 +233,16 @@ const NewProduct = ({ onClose }: Props) => {
                     client.admin.inventoryItems.createLocationLevel(item.id!, {
                       location_id: stock_location.location_id,
                       stocked_quantity: stock_location.stocked_quantity,
-                    })
+                    });
                   })
-                )
+                );
               })
               .flat()
-          )
+          );
         })
         .flat()
-    )
-  }
+    );
+  };
 
   return (
     <form className="w-full">
@@ -293,6 +302,7 @@ const NewProduct = ({ onClose }: Props) => {
                     requireHandle={false}
                   />
                   <DiscountableForm form={nestedForm(form, "discounted")} />
+                  <PopularForm form={nestedForm(form, "is_popular")} />
                 </div>
               </Accordion.Item>
               <Accordion.Item title="Organize" value="organize">
@@ -381,20 +391,21 @@ const NewProduct = ({ onClose }: Props) => {
         </FocusModal.Main>
       </FocusModal>
     </form>
-  )
-}
+  );
+};
 
 const createPayload = (
   data: NewProductForm,
   publish = true,
   salesChannelsEnabled = false
 ): AdminPostProductsReq => {
-  const payload: AdminPostProductsReq = {
+  const payload: AdminPostProductsReq & { is_popular?: boolean } = {
     title: data.general.title,
     subtitle: data.general.subtitle || undefined,
     material: data.general.material || undefined,
     handle: data.general.handle,
     discountable: data.discounted.value,
+    is_popular: data.is_popular.value,
     is_giftcard: false,
     collection_id: data.organize.collection?.value,
     description: data.general.description || undefined,
@@ -446,16 +457,16 @@ const createPayload = (
     })),
     // @ts-ignore
     status: publish ? ProductStatus.PUBLISHED : ProductStatus.DRAFT,
-  }
+  };
 
   if (salesChannelsEnabled) {
     payload.sales_channels = data.salesChannels.channels.map((c) => ({
       id: c.id,
-    }))
+    }));
   }
 
-  return payload
-}
+  return payload;
+};
 
 const createBlank = (): NewProductForm => {
   return {
@@ -480,6 +491,7 @@ const createBlank = (): NewProductForm => {
     discounted: {
       value: true,
     },
+    is_popular: { value: false },
     media: {
       images: [],
     },
@@ -499,8 +511,8 @@ const createBlank = (): NewProductForm => {
       entries: [],
       options: [],
     },
-  }
-}
+  };
+};
 
 const getVariantPrices = (prices: PricesFormType) => {
   const priceArray = prices.prices
@@ -510,10 +522,10 @@ const getVariantPrices = (prices: PricesFormType) => {
         amount: price.amount as number,
         currency_code: price.region_id ? undefined : price.currency_code,
         region_id: price.region_id || undefined,
-      }
-    })
+      };
+    });
 
-  return priceArray
-}
+  return priceArray;
+};
 
-export default NewProduct
+export default NewProduct;
