@@ -4,5 +4,5 @@
 /ui/preview
 /ui/src/extensions
 /node_modules
-.env
 package-lock.json
+yarn.lock
